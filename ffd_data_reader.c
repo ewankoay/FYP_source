@@ -1,0 +1,91 @@
+///////////////////////////////////////////////////////////////////////////////
+///
+/// \file   ffd_data_reader.c
+///
+/// \brief  Read the previous FFD result file (Tecplot format)
+///
+/// \author Wangda Zuo
+///         University of Miami
+///         W.Zuo@miami.edu
+///         Mingang Jin, Qingyan Chen
+///         Purdue University
+///         Jin55@purdue.edu, YanChen@purdue.edu
+///         Wei Tian
+///         University of Miami, Schneider Electric
+///         w.tian@umiami.edu, Wei.Tian@Schneider-Electric.com
+///
+/// \date   6/15/2017
+///
+///////////////////////////////////////////////////////////////////////////////
+
+#include "ffd_data_reader.h"
+
+///////////////////////////////////////////////////////////////////////////////
+/// Read the previous FFD simulation data in a format of standard output
+///
+///\param para Pointer to FFD parameters
+///\param var Pointer to FFD simulation variables
+///
+///\return 0 if no error occurred
+///////////////////////////////////////////////////////////////////////////////
+int read_ffd_data(PARA_DATA *para, REAL **var) {
+  int i,j, k;
+  int imax = para->geom->imax;
+  int jmax = para->geom->jmax;
+  int kmax = para->geom->kmax;
+  int IMAX = imax+2, IJMAX = (imax+2)*(jmax+2);
+  char string[400];
+
+  if((file_old_ffd=fopen(para->inpu->old_ffd_file_name,"r"))==NULL) {
+    sprintf(msg, "ffd_data_reader.c: Can not open file \"%s\".",
+            para->inpu->old_ffd_file_name);
+    ffd_log(msg, FFD_ERROR);
+    return 1;
+  }
+
+  fgets(string, 400, file_old_ffd);
+  sscanf(string, "%lf%d", &para->mytime->t, &para->mytime->step_current);
+  para->mytime->t_start = para->mytime->t;
+  para->mytime->restart_total_steps = para->mytime->step_current;
+
+  sprintf(msg, "QFLUXFLUX4: %d%d", para->mytime->step_total, para->mytime->restart_total_steps);
+  ffd_log(msg, FFD_NORMAL);
+
+  // Adjustments for restarts
+  para->mytime->step_total += para->mytime->restart_total_steps;
+
+  sprintf(msg, "QFLUXFLUX3: %lf %d %d", para->mytime->t, para->mytime->step_current, para->mytime->restart_total_steps);
+  ffd_log(msg, FFD_NORMAL);
+
+  FOR_ALL_CELL
+   fgets(string, 400, file_old_ffd);
+
+  if (sscanf(string, "%f%f%f%f%f%f", &var[VX][IX(i, j, k)], &var[VY][IX(i, j, k)],
+      &var[VZ][IX(i, j, k)], &var[TEMP][IX(i, j, k)],
+      &var[Xi1][IX(i, j, k)], &var[IP][IX(i, j, k)])
+      == 6) {
+      /*
+	  // For debugging purpose only
+
+      sprintf(msg, "QFLUXFLUX2: %f%f%f%f%f%f", var[VX][IX(i, j, k)], var[VY][IX(i, j, k)],
+          var[VZ][IX(i, j, k)], var[TEMP][IX(i, j, k)],
+          var[Xi1][IX(i, j, k)], var[IP][IX(i, j, k)]);
+      ffd_log(msg, FFD_NORMAL);
+      */
+  }
+   else {
+       // handle error: parsing failed
+       sprintf(msg, "read_ffd_data(): Read previous ffd simulation data file failed");
+       ffd_log(msg, FFD_NORMAL);
+   }
+   
+
+  END_FOR
+
+  fclose(file_old_ffd);
+  sprintf(msg, "read_ffd_data(): Read previous ffd simulation data file %s.",
+          para->inpu->old_ffd_file_name);
+  ffd_log(msg, FFD_NORMAL);
+  return 0;
+} // End of read_ffd_data()
+
