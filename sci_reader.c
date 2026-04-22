@@ -480,11 +480,12 @@ int read_sci_input(PARA_DATA *para, REAL **var, int **BINDEX) {
         }
       }
       
-      REAL radius = (var[GY][IX(1, EJ, 1)] - var[GY][IX(1, SJ-1, 1)]) * 0.5; // radius of inlet
-      REAL x_center = (var[GY][IX(1, SJ-1, 1)] + var[GY][IX(1, EJ, 1)]) * 0.5; // x coordinate of center
-      REAL y_center = (var[GZ][IX(1, 1, SK-1)] + var[GZ][IX(1, 1, EK)]) * 0.5; // y coordinate of center
-      sprintf(msg, "EWAN EDIT CIRCULAR: %lf %lf %lf %lf %lf", var[GZ][IX(1, 1, SK-1)], var[GZ][IX(1, 1, EK)], x_center, y_center, radius);
-      ffd_log(msg, FFD_NORMAL);
+      //REAL radius = (var[GY][IX(1, EJ, 1)] - var[GY][IX(1, SJ-1, 1)]) * 0.5; // radius of inlet
+      //REAL x_center = (var[GY][IX(1, SJ-1, 1)] + var[GY][IX(1, EJ, 1)]) * 0.5; // x coordinate of center
+      //REAL y_center = (var[GZ][IX(1, 1, SK-1)] + var[GZ][IX(1, 1, EK)]) * 0.5; // y coordinate of center
+      //sprintf(msg, "EWAN EDIT CIRCULAR: %lf %lf %lf %lf %lf", var[GZ][IX(1, 1, SK-1)], var[GZ][IX(1, 1, EK)], x_center, y_center, radius);
+      //ffd_log(msg, FFD_NORMAL);
+
       // Assign the inlet boundary condition for each cell
       for(ii=SI; ii<=EI; ii++){
         //for(ij=(SJ-1); ij<=EJ; ij++){     // ORIGINAL

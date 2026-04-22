@@ -51,16 +51,16 @@ REAL check_residual(PARA_DATA *para, REAL **var, REAL *x, REAL *flag) {
         - af[IX(i,j,k)]*x[IX(i,j,k+1)] - ab[IX(i,j,k)]*x[IX(i,j,k-1)]
         - b[IX(i,j,k)])/ ap[IX(i, j, k)] );
     count += 1;
-    //if (x == var[TEMP]) {
-    //    if (tmp > 0.001) {
-    //        sprintf(msg, "Residual_cell3_value: %e %d %d %d %f", tmp, i, j, k, x[IX(i, j, k)]);
-    //        ffd_log(msg, FFD_NORMAL);
-    //        sprintf(msg, "Residual_values: %f %f %f %f %f %f %f", x[IX(i + 1, j, k)], x[IX(i, j + 1, k)], x[IX(i, j, k + 1)], x[IX(i - 1, j, k)], x[IX(i, j - 1, k)], x[IX(i, j, k - 1)], b[IX(i, j, k)]);
-    //        ffd_log(msg, FFD_NORMAL);
-    //        sprintf(msg, "Residual_coefficients: %f %f %f %f %f %f %f", ae[IX(i, j, k)], an[IX(i, j, k)], af[IX(i, j, k)], aw[IX(i, j, k)], as[IX(i, j, k)], ab[IX(i, j, k)], ap[IX(i, j, k)]);
-    //        ffd_log(msg, FFD_NORMAL);
-    //    }
-    //}
+    /*if (x == var[TEMP]) {
+        if (tmp > 0.001) {
+            sprintf(msg, "Residual_cell3_value: %e %d %d %d %f %f", tmp, i, j, k, x[IX(i, j, k)], (-ae[IX(i, j, k)] * x[IX(i + 1, j, k)] - aw[IX(i, j, k)] * x[IX(i - 1, j, k)]- an[IX(i, j, k)] * x[IX(i, j + 1, k)] - as[IX(i, j, k)] * x[IX(i, j - 1, k)]- af[IX(i, j, k)] * x[IX(i, j, k + 1)] - ab[IX(i, j, k)] * x[IX(i, j, k - 1)]- b[IX(i, j, k)]) / ap[IX(i, j, k)]);
+            ffd_log(msg, FFD_NORMAL);
+            sprintf(msg, "Residual_values: %f %f %f %f %f %f %f", ae[IX(i, j, k)]*x[IX(i + 1, j, k)], x[IX(i, j + 1, k)], af[IX(i, j, k)]*x[IX(i, j, k + 1)], x[IX(i - 1, j, k)], x[IX(i, j - 1, k)], x[IX(i, j, k - 1)], b[IX(i, j, k)]);
+            ffd_log(msg, FFD_NORMAL);
+            sprintf(msg, "Residual_coefficients: %f %f %f %f %f %f %f", ae[IX(i, j, k)], an[IX(i, j, k)], af[IX(i, j, k)], aw[IX(i, j, k)], as[IX(i, j, k)], ab[IX(i, j, k)], ap[IX(i, j, k)]);
+            ffd_log(msg, FFD_NORMAL);
+        }
+    }*/
     if (residual < tmp) residual = tmp;
     END_FOR
         //return tmp/count;
@@ -151,9 +151,12 @@ REAL outflow(PARA_DATA *para, REAL **var, REAL *psi, int **BINDEX) {
       if(k==kmax+1) mass_out += psi[IX(i,j,k)]*w[IX(i,j,k-1)]*(gx[IX(i,j,k)]
                           -gx[IX(i-1,j,k)])* (gy[IX(i,j,k)]-gy[IX(i,j-1,k)]);
     }
-
+    /*if isnan(mass_out) {
+        sprintf(msg, "EWANTEST: %e %e %e %e", psi[IX(i, j, k)], u[IX(i, j, k)], v[IX(i, j, k)], w[IX(i, j, k)]);
+        ffd_log(msg, FFD_NORMAL);
+    }*/
   }
-
+  
   return mass_out;
 } // End of outflow()
 

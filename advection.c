@@ -1198,8 +1198,18 @@ int coef_adv(PARA_DATA *para, REAL **var, REAL *psi, REAL *psi0,
         // Then, the temperature field is likely to be blown off.
         // The solution is to change the denominator by removing Fe - Fw + Fn - Fs + Ff - Fb in AP
         FOR_EACH_CELL
+            /*Dx = gx[IX(i, j, k)] - gx[IX(i - 1, j, k)];
+            Dy = gy[IX(i, j, k)] - gy[IX(i, j - 1, k)];
+            Dz = gz[IX(i, j, k)] - gz[IX(i, j, k - 1)];
+            Fw = u[IX(i - 1, j, k)] * Dy*Dz;
+            Fe = u[IX(i, j, k)] * Dy*Dz;
+            Fs = v[IX(i, j - 1, k)] * Dx*Dz;
+            Fn = v[IX(i, j, k)] * Dx*Dz;
+            Fb = w[IX(i, j, k - 1)] * Dx*Dy;
+            Ff = w[IX(i, j, k)] * Dx*Dy;*/
+
             ap[IX(i, j, k)] = ap0[IX(i, j, k)] + ae[IX(i, j, k)] + aw[IX(i, j, k)]
-            + an[IX(i, j, k)] + as[IX(i, j, k)] + af[IX(i, j, k)] + ab[IX(i, j, k)];
+                + an[IX(i, j, k)] + as[IX(i, j, k)] + af[IX(i, j, k)] + ab[IX(i, j, k)];
             //+ Fe - Fw + Fn - Fs + Ff - Fb;
         END_FOR
 

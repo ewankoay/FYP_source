@@ -189,7 +189,7 @@ int temp_step(PARA_DATA *para, REAL **var, int **BINDEX) {
   // then apply the restoration of energy conservation
   // Wei Tian 6/20/2017, @Schneider Electric, Andover, MA
   if (para->solv->advection_solver == SEMI) {
-    /*flag = scalar_conservation(para, var, T, T0, BINDEX);*/
+    flag = scalar_conservation(para, var, T, T0, BINDEX);
     if (flag != 0) {
       ffd_log("temp_step(): Could not conserve temperature.", FFD_ERROR);
       return flag;
@@ -208,7 +208,7 @@ int temp_step(PARA_DATA *para, REAL **var, int **BINDEX) {
   /*sprintf(msg, "CHECKING_DIFF %f", T[IX(40, 40, 41)] - T[IX(40, 40, 40)]);
   ffd_log(msg, FFD_NORMAL);*/
   
-
+  
   // check residual after iterative solver
   if (para->solv->check_residual == 1) {
     residual = check_residual(para, var, T, var[FLAGP]);
@@ -217,6 +217,7 @@ int temp_step(PARA_DATA *para, REAL **var, int **BINDEX) {
     sprintf(msg, "Residual in diffusion T: %e", residual);
     ffd_log(msg, FFD_NORMAL);
   }
+
   return flag;
 } // End of temp_step( )
 
@@ -421,7 +422,22 @@ int vel_step(PARA_DATA *para, REAL **var,int **BINDEX) {
     ffd_log(msg, FFD_NORMAL);
   }
 
+  // Apply forced mass conservation BEFORE projection to ensure the 
+  // Pressure-Poisson equation has a mathematically compatible right-hand side.
+  if(para->bc->nb_outlet!=0 && para->solv->mass_conservation_on ==1) flag = mass_conservation(para, var,BINDEX);
+  if(flag!=0) {
+    ffd_log("vel_step(): Could not conduct mass conservation correction.", FFD_ERROR);
+    return flag;
+  }
+
   flag = project(para, var,BINDEX);
+  if(flag!=0) {
+    ffd_log("vel_step(): Could not project velocity.", FFD_ERROR);
+    return flag;
+  }
+
+  return flag;
+  /*flag = project(para, var,BINDEX);
   if(flag!=0) {
     ffd_log("vel_step(): Could not project velocity.", FFD_ERROR);
     return flag;
@@ -434,7 +450,7 @@ int vel_step(PARA_DATA *para, REAL **var,int **BINDEX) {
             FFD_ERROR);
     return flag;
   }
-  return flag;
+  return flag;*/
 } // End of vel_step( )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -576,7 +592,7 @@ int CheckImbalance(PARA_DATA *para, REAL **var, int var_type, int **BINDEX) {
       exit(1);
     }
     fprintf(FILE_IM, "Time\t\tInflow\t\tOutflow\t\tWall\t\tDeficit\t\tEnergyRate\t\tAdvEnergy\t\tImbalance (Ein+Ewall-Eout)/Ewall\n");
-    fprintf(FILE_IM, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",para->mytime->t, in, out, wall, (in - out +wall), rate_of_change, para->prob->Energy_Imb_Adv, fabs(in-out+wall)/wall);
+    fprintf(FILE_IM, "%f\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n",para->mytime->t, in, out, wall, (in - out +wall), rate_of_change, para->prob->Energy_Imb_Adv, fabs(in-out+wall)/wall);
     fclose(FILE_IM);
   }
   else {
@@ -585,7 +601,7 @@ int CheckImbalance(PARA_DATA *para, REAL **var, int var_type, int **BINDEX) {
       fprintf(stderr, "Error:can not open error file!\n");
       exit(1);
     }
-    fprintf(FILE_IM, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", para->mytime->t, in, out, wall, (in - out + wall), rate_of_change, para->prob->Energy_Imb_Adv, fabs(in - out + wall) / wall);
+    fprintf(FILE_IM, "%f\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n", para->mytime->t, in, out, wall, (in - out + wall), rate_of_change, para->prob->Energy_Imb_Adv, fabs(in - out + wall) / wall);
     fclose(FILE_IM);
   }
   return 0;

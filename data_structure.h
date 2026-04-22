@@ -44,8 +44,8 @@
 #include <stdlib.h>
 
 #ifndef REAL
-#define REAL float
-#define ifDouble 0/*index to show it is double*/
+#define REAL double
+#define ifDouble 1/*index to show it is double*/
 #endif
 
 #define IX(i,j,k) ((i)+(IMAX)*(j)+(IJMAX)*(k))

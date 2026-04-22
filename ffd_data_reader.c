@@ -60,10 +60,18 @@ int read_ffd_data(PARA_DATA *para, REAL **var) {
   FOR_ALL_CELL
    fgets(string, 400, file_old_ffd);
 
-  if (sscanf(string, "%f%f%f%f%f%f", &var[VX][IX(i, j, k)], &var[VY][IX(i, j, k)],
-      &var[VZ][IX(i, j, k)], &var[TEMP][IX(i, j, k)],
-      &var[Xi1][IX(i, j, k)], &var[IP][IX(i, j, k)])
-      == 6) {
+  int read_count;
+  if (ifDouble == 1) {
+      read_count = sscanf(string, "%lf%lf%lf%lf%lf%lf", &var[VX][IX(i, j, k)], &var[VY][IX(i, j, k)],
+          &var[VZ][IX(i, j, k)], &var[TEMP][IX(i, j, k)],
+          &var[Xi1][IX(i, j, k)], &var[IP][IX(i, j, k)]);
+  } else {
+      read_count = sscanf(string, "%f%f%f%f%f%f", &var[VX][IX(i, j, k)], &var[VY][IX(i, j, k)],
+          &var[VZ][IX(i, j, k)], &var[TEMP][IX(i, j, k)],
+          &var[Xi1][IX(i, j, k)], &var[IP][IX(i, j, k)]);
+  }
+
+  if (read_count == 6) {
       /*
 	  // For debugging purpose only
 
@@ -88,4 +96,3 @@ int read_ffd_data(PARA_DATA *para, REAL **var) {
   ffd_log(msg, FFD_NORMAL);
   return 0;
 } // End of read_ffd_data()
-

@@ -203,6 +203,19 @@ int write_vtk_data(PARA_DATA *para, REAL **var, char *name) {
   REAL *flagp = var[FLAGP];
   char *filename;
   FILE *datafile;
+  const char *vtk_type;
+  const char *vtk_fmt;
+  const char *vtk_fmt_vec;
+
+  if (ifDouble == 1) {
+    vtk_type = "double";
+    vtk_fmt = "%.16g\t";
+    vtk_fmt_vec = "%.16g\t%.16g\t%.16g\n";
+  } else {
+    vtk_type = "float";
+    vtk_fmt = "%f\t";
+    vtk_fmt_vec = "%f\t%f\t%f\n";
+  }
 
   /****************************************************************************
   | Allocate memory for filename
@@ -242,29 +255,29 @@ int write_vtk_data(PARA_DATA *para, REAL **var, char *name) {
   fprintf(datafile, "DIMENSIONS\t%d\t%d\t%d\n", imax + 2, jmax + 2, kmax + 2);
 
   // Next line: X direction coordinate number
-  fprintf(datafile, "X_COORDINATES %d float\n", imax + 2);
+  fprintf(datafile, "X_COORDINATES %d %s\n", imax + 2, vtk_type);
 
   // Next line: X direction coordinate
   for (i = 0; i <= imax + 1; i++) {
-    fprintf(datafile, "%f\t", x[IX(i, jmax, kmax)]);
+    fprintf(datafile, vtk_fmt, x[IX(i, jmax, kmax)]);
   }
   fprintf(datafile, "\n");
 
   // Next line: Y direction coordinate number
-  fprintf(datafile, "Y_COORDINATES %d float\n", jmax + 2);
+  fprintf(datafile, "Y_COORDINATES %d %s\n", jmax + 2, vtk_type);
 
   // Next line: Y direction coordinate
   for (i = 0; i <= jmax + 1; i++) {
-    fprintf(datafile, "%f\t", y[IX(imax, i, kmax)]);
+    fprintf(datafile, vtk_fmt, y[IX(imax, i, kmax)]);
   }
   fprintf(datafile, "\n");
 
   // Next line: Z direction coordinate number
-  fprintf(datafile, "Z_COORDINATES %d float\n", kmax + 2);
+  fprintf(datafile, "Z_COORDINATES %d %s\n", kmax + 2, vtk_type);
 
   // Next line: Z direction coordinate
   for (i = 0; i <= kmax + 1; i++) {
-    fprintf(datafile, "%f\t", z[IX(imax, jmax, i)]);
+    fprintf(datafile, vtk_fmt, z[IX(imax, jmax, i)]);
   }
   fprintf(datafile, "\n");
 
@@ -272,26 +285,26 @@ int write_vtk_data(PARA_DATA *para, REAL **var, char *name) {
   fprintf(datafile, "POINT_DATA %d\n", (imax + 2) * (jmax + 2) * (kmax + 2));
 
   // Next three lines: Write scalar variable T
-  fprintf(datafile, "SCALARS T float 1\n");
+  fprintf(datafile, "SCALARS T %s 1\n", vtk_type);
   fprintf(datafile, "LOOKUP_TABLE default\n");
   FOR_ALL_CELL
-  fprintf(datafile, "%f\t", T[IX(i, j, k)]);
+  fprintf(datafile, vtk_fmt, T[IX(i, j, k)]);
   END_FOR
   fprintf(datafile, "\n");
 
   // Next three lines: Write scalar variable P
-  fprintf(datafile, "SCALARS P float 1\n");
+  fprintf(datafile, "SCALARS P %s 1\n", vtk_type);
   fprintf(datafile, "LOOKUP_TABLE default\n");
   FOR_ALL_CELL
-  fprintf(datafile, "%f\t", p[IX(i, j, k)]);
+  fprintf(datafile, vtk_fmt, p[IX(i, j, k)]);
   END_FOR
   fprintf(datafile, "\n");
 
   // Next three lines: Write scalar speed VEL
-  fprintf(datafile, "SCALARS VEL float 1\n");
+  fprintf(datafile, "SCALARS VEL %s 1\n", vtk_type);
   fprintf(datafile, "LOOKUP_TABLE default\n");
   FOR_ALL_CELL
-  fprintf(datafile, "%f\t",
+  fprintf(datafile, vtk_fmt,
           sqrt(u[IX(i, j, k)] * u[IX(i, j, k)] +
                v[IX(i, j, k)] * v[IX(i, j, k)] +
                w[IX(i, j, k)] * w[IX(i, j, k)]));
@@ -299,33 +312,33 @@ int write_vtk_data(PARA_DATA *para, REAL **var, char *name) {
   fprintf(datafile, "\n");
 
   // Next three lines: Write scalar U
-  fprintf(datafile, "SCALARS U float 1\n");
+  fprintf(datafile, "SCALARS U %s 1\n", vtk_type);
   fprintf(datafile, "LOOKUP_TABLE default\n");
   FOR_ALL_CELL
-  fprintf(datafile, "%f\t", u[IX(i, j, k)]);
+  fprintf(datafile, vtk_fmt, u[IX(i, j, k)]);
   END_FOR
   fprintf(datafile, "\n");
 
   // Next three lines: Write scalar V
-  fprintf(datafile, "SCALARS V float 1\n");
+  fprintf(datafile, "SCALARS V %s 1\n", vtk_type);
   fprintf(datafile, "LOOKUP_TABLE default\n");
   FOR_ALL_CELL
-  fprintf(datafile, "%f\t", v[IX(i, j, k)]);
+  fprintf(datafile, vtk_fmt, v[IX(i, j, k)]);
   END_FOR
   fprintf(datafile, "\n");
 
   // Next three lines: Write scalar W
-  fprintf(datafile, "SCALARS W float 1\n");
+  fprintf(datafile, "SCALARS W %s 1\n", vtk_type);
   fprintf(datafile, "LOOKUP_TABLE default\n");
   FOR_ALL_CELL
-  fprintf(datafile, "%f\t", w[IX(i, j, k)]);
+  fprintf(datafile, vtk_fmt, w[IX(i, j, k)]);
   END_FOR
   fprintf(datafile, "\n");
 
   // From lines: Write velocity vector
-  fprintf(datafile, "VECTORS velocity float\n");
+  fprintf(datafile, "VECTORS velocity %s\n", vtk_type);
   FOR_ALL_CELL
-  fprintf(datafile, "%f\t%f\t%f\n", u[IX(i, j, k)], v[IX(i, j, k)],
+  fprintf(datafile, vtk_fmt_vec, u[IX(i, j, k)], v[IX(i, j, k)],
           w[IX(i, j, k)]);
   END_FOR
 
@@ -338,7 +351,7 @@ int write_vtk_data(PARA_DATA *para, REAL **var, char *name) {
   // write to the stream
   // FIXME: need to talk to Mike about the coordinate
   FOR_ALL_CELL_IJK
-  fprintf(stdout, "%f\t%f\t%f\n", u[IX(i, j, k)], v[IX(i, j, k)],
+  fprintf(stdout, vtk_fmt_vec, u[IX(i, j, k)], v[IX(i, j, k)],
           w[IX(i, j, k)]);
   END_FOR
 
@@ -368,6 +381,19 @@ int write_vtk_fluid(PARA_DATA *para, REAL **var, char *name) {
   int CellNum = 0;
   char *filename;
   FILE *datafile;
+  const char *vtk_type;
+  const char *vtk_fmt;
+  const char *vtk_fmt_vec;
+
+  if (ifDouble == 1) {
+    vtk_type = "double";
+    vtk_fmt = "%.16g\t";
+    vtk_fmt_vec = "%.16g\t%.16g\t%.16g\n";
+  } else {
+    vtk_type = "float";
+    vtk_fmt = "%f\t";
+    vtk_fmt_vec = "%f\t%f\t%f\n";
+  }
 
   /****************************************************************************
   | Allocate memory for filename
@@ -407,29 +433,29 @@ int write_vtk_fluid(PARA_DATA *para, REAL **var, char *name) {
   fprintf(datafile, "DIMENSIONS\t%d\t%d\t%d\n", imax, jmax, kmax);
 
   // Next line: X direction coordinate number
-  fprintf(datafile, "X_COORDINATES %d float\n", imax);
+  fprintf(datafile, "X_COORDINATES %d %s\n", imax, vtk_type);
 
   // Next line: X direction coordinate
   for (i = 1; i <= imax; i++) {
-    fprintf(datafile, "%f\t", x[IX(i, jmax, kmax)]);
+    fprintf(datafile, vtk_fmt, x[IX(i, jmax, kmax)]);
   }
   fprintf(datafile, "\n");
 
   // Next line: Y direction coordinate number
-  fprintf(datafile, "Y_COORDINATES %d float\n", jmax);
+  fprintf(datafile, "Y_COORDINATES %d %s\n", jmax, vtk_type);
 
   // Next line: Y direction coordinate
   for (i = 1; i <= jmax; i++) {
-    fprintf(datafile, "%f\t", y[IX(imax, i, kmax)]);
+    fprintf(datafile, vtk_fmt, y[IX(imax, i, kmax)]);
   }
   fprintf(datafile, "\n");
 
   // Next line: Z direction coordinate number
-  fprintf(datafile, "Z_COORDINATES %d float\n", kmax);
+  fprintf(datafile, "Z_COORDINATES %d %s\n", kmax, vtk_type);
 
   // Next line: Z direction coordinate
   for (i = 1; i <= kmax; i++) {
-    fprintf(datafile, "%f\t", z[IX(imax, jmax, i)]);
+    fprintf(datafile, vtk_fmt, z[IX(imax, jmax, i)]);
   }
   fprintf(datafile, "\n");
 
@@ -450,26 +476,26 @@ int write_vtk_fluid(PARA_DATA *para, REAL **var, char *name) {
   fprintf(datafile, "POINT_DATA %d\n", CellNum);
 
   // Next three lines: Write scalar variable T
-  fprintf(datafile, "SCALARS T float 1\n");
+  fprintf(datafile, "SCALARS T %s 1\n", vtk_type);
   fprintf(datafile, "LOOKUP_TABLE default\n");
   FOR_EACH_CELL
-  fprintf(datafile, "%f\t", T[IX(i, j, k)]);
+  fprintf(datafile, vtk_fmt, T[IX(i, j, k)]);
   END_FOR
   fprintf(datafile, "\n");
 
   // Next three lines: Write scalar variable P
-  fprintf(datafile, "SCALARS P float 1\n");
+  fprintf(datafile, "SCALARS P %s 1\n", vtk_type);
   fprintf(datafile, "LOOKUP_TABLE default\n");
   FOR_EACH_CELL
-  fprintf(datafile, "%f\t", p[IX(i, j, k)]);
+  fprintf(datafile, vtk_fmt, p[IX(i, j, k)]);
   END_FOR
   fprintf(datafile, "\n");
 
   // Next three lines: Write scalar speed VEL
-  fprintf(datafile, "SCALARS VEL float 1\n");
+  fprintf(datafile, "SCALARS VEL %s 1\n", vtk_type);
   fprintf(datafile, "LOOKUP_TABLE default\n");
   FOR_EACH_CELL
-  fprintf(datafile, "%f\t",
+  fprintf(datafile, vtk_fmt,
           sqrt(u[IX(i, j, k)] * u[IX(i, j, k)] +
                v[IX(i, j, k)] * v[IX(i, j, k)] +
                w[IX(i, j, k)] * w[IX(i, j, k)]));
@@ -477,33 +503,33 @@ int write_vtk_fluid(PARA_DATA *para, REAL **var, char *name) {
   fprintf(datafile, "\n");
 
   // Next three lines: Write scalar U
-  fprintf(datafile, "SCALARS U float 1\n");
+  fprintf(datafile, "SCALARS U %s 1\n", vtk_type);
   fprintf(datafile, "LOOKUP_TABLE default\n");
   FOR_EACH_CELL
-  fprintf(datafile, "%f\t", u[IX(i, j, k)]);
+  fprintf(datafile, vtk_fmt, u[IX(i, j, k)]);
   END_FOR
   fprintf(datafile, "\n");
 
   // Next three lines: Write scalar V
-  fprintf(datafile, "SCALARS V float 1\n");
+  fprintf(datafile, "SCALARS V %s 1\n", vtk_type);
   fprintf(datafile, "LOOKUP_TABLE default\n");
   FOR_EACH_CELL
-  fprintf(datafile, "%f\t", v[IX(i, j, k)]);
+  fprintf(datafile, vtk_fmt, v[IX(i, j, k)]);
   END_FOR
   fprintf(datafile, "\n");
 
   // Next three lines: Write scalar W
-  fprintf(datafile, "SCALARS W float 1\n");
+  fprintf(datafile, "SCALARS W %s 1\n", vtk_type);
   fprintf(datafile, "LOOKUP_TABLE default\n");
   FOR_EACH_CELL
-  fprintf(datafile, "%f\t", w[IX(i, j, k)]);
+  fprintf(datafile, vtk_fmt, w[IX(i, j, k)]);
   END_FOR
   fprintf(datafile, "\n");
 
   // From lines: Write velocity vector
-  fprintf(datafile, "VECTORS velocity float\n");
+  fprintf(datafile, "VECTORS velocity %s\n", vtk_type);
   FOR_EACH_CELL
-  fprintf(datafile, "%f\t%f\t%f\n", u[IX(i, j, k)], v[IX(i, j, k)],
+  fprintf(datafile, vtk_fmt_vec, u[IX(i, j, k)], v[IX(i, j, k)],
           w[IX(i, j, k)]);
   END_FOR
 
@@ -1041,6 +1067,19 @@ int write_tecplot_data_unsteady(PARA_DATA * para, REAL **var, char* name) {
     char* filename;
     char timestepcounter[16];
     FILE* datafile;
+    const char *vtk_type;
+    const char *vtk_fmt;
+    const char *vtk_fmt_vec;
+
+    if (ifDouble == 1) {
+        vtk_type = "double";
+        vtk_fmt = "%.16g\t";
+        vtk_fmt_vec = "%.16g\t%.16g\t%.16g\n";
+    } else {
+        vtk_type = "float";
+        vtk_fmt = "%f\t";
+        vtk_fmt_vec = "%f\t%f\t%f\n";
+    }
 
     snprintf(timestepcounter, sizeof(timestepcounter), "%010d", para->mytime->step_current); // convert time step counter to string
 
@@ -1156,6 +1195,20 @@ int write_vtk_data_unsteady(PARA_DATA * para, REAL * *var, char* name) {
     char timestepcounter[16];
     FILE* datafile;
 
+    const char *vtk_type;
+    const char *vtk_fmt;
+    const char *vtk_fmt_vec;
+
+    if (ifDouble == 1) {
+      vtk_type = "double";
+      vtk_fmt = "%.16g\t";
+      vtk_fmt_vec = "%.16g\t%.16g\t%.16g\n";
+    } else {
+      vtk_type = "float";
+      vtk_fmt = "%f\t";
+      vtk_fmt_vec = "%f\t%f\t%f\n";
+    }
+
     snprintf(timestepcounter, sizeof(timestepcounter), "%010d", para->mytime->step_current); // convert time step counter to string
 
     /****************************************************************************
@@ -1197,29 +1250,29 @@ int write_vtk_data_unsteady(PARA_DATA * para, REAL * *var, char* name) {
     fprintf(datafile, "DIMENSIONS\t%d\t%d\t%d\n", imax + 2, jmax + 2, kmax + 2);
 
     // Next line: X direction coordinate number
-    fprintf(datafile, "X_COORDINATES %d float\n", imax + 2);
+    fprintf(datafile, "X_COORDINATES %d %s\n", imax + 2, vtk_type);
 
     // Next line: X direction coordinate
     for (i = 0; i <= imax + 1; i++) {
-        fprintf(datafile, "%f\t", x[IX(i, jmax, kmax)]);
+        fprintf(datafile, vtk_fmt, x[IX(i, jmax, kmax)]);
     }
     fprintf(datafile, "\n");
 
     // Next line: Y direction coordinate number
-    fprintf(datafile, "Y_COORDINATES %d float\n", jmax + 2);
+    fprintf(datafile, "Y_COORDINATES %d %s\n", jmax + 2, vtk_type);
 
     // Next line: Y direction coordinate
     for (i = 0; i <= jmax + 1; i++) {
-        fprintf(datafile, "%f\t", y[IX(imax, i, kmax)]);
+        fprintf(datafile, vtk_fmt, y[IX(imax, i, kmax)]);
     }
     fprintf(datafile, "\n");
 
     // Next line: Z direction coordinate number
-    fprintf(datafile, "Z_COORDINATES %d float\n", kmax + 2);
+    fprintf(datafile, "Z_COORDINATES %d %s\n", kmax + 2, vtk_type);
 
     // Next line: Z direction coordinate
     for (i = 0; i <= kmax + 1; i++) {
-        fprintf(datafile, "%f\t", z[IX(imax, jmax, i)]);
+        fprintf(datafile, vtk_fmt, z[IX(imax, jmax, i)]);
     }
     fprintf(datafile, "\n");
 
@@ -1227,8 +1280,12 @@ int write_vtk_data_unsteady(PARA_DATA * para, REAL * *var, char* name) {
     // Add writing time
     fprintf(datafile, "\n");
     fprintf(datafile, "FIELD FieldData 1\n");
-    fprintf(datafile, "TIME 1 1 float\n");
-    fprintf(datafile, "%f\n", para->mytime->t);
+    fprintf(datafile, "TIME 1 1 %s\n", vtk_type);
+    if (ifDouble == 1) {
+        fprintf(datafile, "%.16g\n", para->mytime->t);
+    } else {
+        fprintf(datafile, "%f\n", para->mytime->t);
+    }
     fprintf(datafile, "\n");
     /////////////////////////////////////////////////
 
@@ -1236,26 +1293,26 @@ int write_vtk_data_unsteady(PARA_DATA * para, REAL * *var, char* name) {
     fprintf(datafile, "POINT_DATA %d\n", (imax + 2) * (jmax + 2) * (kmax + 2));
 
     // Next three lines: Write scalar variable T
-    fprintf(datafile, "SCALARS T float 1\n");
+    fprintf(datafile, "SCALARS T %s 1\n", vtk_type);
     fprintf(datafile, "LOOKUP_TABLE default\n");
     FOR_ALL_CELL
-        fprintf(datafile, "%f\t", T[IX(i, j, k)]);
+        fprintf(datafile, vtk_fmt, T[IX(i, j, k)]);
     END_FOR
         fprintf(datafile, "\n");
 
     // Next three lines: Write scalar variable P
-    fprintf(datafile, "SCALARS P float 1\n");
+    fprintf(datafile, "SCALARS P %s 1\n", vtk_type);
     fprintf(datafile, "LOOKUP_TABLE default\n");
     FOR_ALL_CELL
-        fprintf(datafile, "%f\t", p[IX(i, j, k)]);
+        fprintf(datafile, vtk_fmt, p[IX(i, j, k)]);
     END_FOR
         fprintf(datafile, "\n");
 
     // Next three lines: Write scalar speed VEL
-    fprintf(datafile, "SCALARS VEL float 1\n");
+    fprintf(datafile, "SCALARS VEL %s 1\n", vtk_type);
     fprintf(datafile, "LOOKUP_TABLE default\n");
     FOR_ALL_CELL
-        fprintf(datafile, "%f\t",
+        fprintf(datafile, vtk_fmt,
             sqrt(u[IX(i, j, k)] * u[IX(i, j, k)] +
                 v[IX(i, j, k)] * v[IX(i, j, k)] +
                 w[IX(i, j, k)] * w[IX(i, j, k)]));
@@ -1263,33 +1320,33 @@ int write_vtk_data_unsteady(PARA_DATA * para, REAL * *var, char* name) {
         fprintf(datafile, "\n");
 
     // Next three lines: Write scalar U
-    fprintf(datafile, "SCALARS U float 1\n");
+    fprintf(datafile, "SCALARS U %s 1\n", vtk_type);
     fprintf(datafile, "LOOKUP_TABLE default\n");
     FOR_ALL_CELL
-        fprintf(datafile, "%f\t", u[IX(i, j, k)]);
+        fprintf(datafile, vtk_fmt, u[IX(i, j, k)]);
     END_FOR
         fprintf(datafile, "\n");
 
     // Next three lines: Write scalar V
-    fprintf(datafile, "SCALARS V float 1\n");
+    fprintf(datafile, "SCALARS V %s 1\n", vtk_type);
     fprintf(datafile, "LOOKUP_TABLE default\n");
     FOR_ALL_CELL
-        fprintf(datafile, "%f\t", v[IX(i, j, k)]);
+        fprintf(datafile, vtk_fmt, v[IX(i, j, k)]);
     END_FOR
         fprintf(datafile, "\n");
 
     // Next three lines: Write scalar W
-    fprintf(datafile, "SCALARS W float 1\n");
+    fprintf(datafile, "SCALARS W %s 1\n", vtk_type);
     fprintf(datafile, "LOOKUP_TABLE default\n");
     FOR_ALL_CELL
-        fprintf(datafile, "%f\t", w[IX(i, j, k)]);
+        fprintf(datafile, vtk_fmt, w[IX(i, j, k)]);
     END_FOR
         fprintf(datafile, "\n");
 
     // From lines: Write velocity vector
-    fprintf(datafile, "VECTORS velocity float\n");
+    fprintf(datafile, "VECTORS velocity %s\n", vtk_type);
     FOR_ALL_CELL
-        fprintf(datafile, "%f\t%f\t%f\n", u[IX(i, j, k)], v[IX(i, j, k)],
+        fprintf(datafile, vtk_fmt_vec, u[IX(i, j, k)], v[IX(i, j, k)],
             w[IX(i, j, k)]);
     END_FOR
 
@@ -1340,13 +1397,23 @@ int write_oldffd_data(PARA_DATA* para, REAL** var, char* name) {
         para->mytime->step_current);
     
     FOR_ALL_CELL
-    fprintf(datafile, "%f\t%f\t%f\t%f\t%f\t%f\n",
-        u[IX(i, j, k)],   // velocity X
-        v[IX(i, j, k)],   // velocity Y
-        w[IX(i, j, k)],   // velocity Z
-        T[IX(i, j, k)],   // temperature
-        Xi[IX(i, j, k)],  // species fraction
-        p[IX(i, j, k)]);  // pressure
+    if (ifDouble == 1) {
+        fprintf(datafile, "%.16g\t%.16g\t%.16g\t%.16g\t%.16g\t%.16g\n",
+            u[IX(i, j, k)],   // velocity X
+            v[IX(i, j, k)],   // velocity Y
+            w[IX(i, j, k)],   // velocity Z
+            T[IX(i, j, k)],   // temperature
+            Xi[IX(i, j, k)],  // species fraction
+            p[IX(i, j, k)]);  // pressure
+    } else {
+        fprintf(datafile, "%f\t%f\t%f\t%f\t%f\t%f\n",
+            u[IX(i, j, k)],   // velocity X
+            v[IX(i, j, k)],   // velocity Y
+            w[IX(i, j, k)],   // velocity Z
+            T[IX(i, j, k)],   // temperature
+            Xi[IX(i, j, k)],  // species fraction
+            p[IX(i, j, k)]);  // pressure
+    }
     END_FOR
 
     sprintf(msg, "write_oldffd_data(): Wrote file %s.", filename);
@@ -1355,4 +1422,3 @@ int write_oldffd_data(PARA_DATA* para, REAL** var, char* name) {
     fclose(datafile);
     return 0;
 }
-

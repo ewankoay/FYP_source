@@ -74,6 +74,10 @@ int GS_itr(PARA_DATA *para, REAL **var, REAL *x, REAL *flag, REAL residual_min) 
                           sprintf(msg, "CHECKING_GS %e %e %e %e %e %e %e", b[IX(i, j, k)], ae[IX(i, j, k)] * x[IX(i + 1, j, k)], ab[IX(i, j, k)] * x[IX(i, j, k - 1)], aw[IX(i, j, k)] * x[IX(i - 1, j, k)], an[IX(i, j, k)] * x[IX(i, j + 1, k)], as[IX(i, j, k)] * x[IX(i, j - 1, k)], af[IX(i, j, k)] * x[IX(i, j, k + 1)]);
                           ffd_log(msg, FFD_NORMAL);
                       }*/
+                      if isnan(x[IX(i, j, k)]) {
+                          sprintf(msg, "DIVERGENCE ERROR");
+                          ffd_log(msg, FFD_ERROR);
+                      }
                   }
           /*-------------------------------------------------------------------------
           | Solve in X in backward direction
@@ -90,6 +94,10 @@ int GS_itr(PARA_DATA *para, REAL **var, REAL *x, REAL *flag, REAL residual_min) 
                           + af[IX(i, j, k)] * x[IX(i, j, k + 1)]
                           + ab[IX(i, j, k)] * x[IX(i, j, k - 1)]
                           + b[IX(i, j, k)]) / ap[IX(i, j, k)]);
+                      if isnan(x[IX(i, j, k)]) {
+                          sprintf(msg, "DIVERGENCE ERROR");
+                          ffd_log(msg, FFD_ERROR);
+                      }
                   }
           ///*-------------------------------------------------------------------------
           //| Solve in Y in forward direction
@@ -106,6 +114,9 @@ int GS_itr(PARA_DATA *para, REAL **var, REAL *x, REAL *flag, REAL residual_min) 
                           + af[IX(i, j, k)] * x[IX(i, j, k + 1)]
                           + ab[IX(i, j, k)] * x[IX(i, j, k - 1)]
                           + b[IX(i, j, k)]) / ap[IX(i, j, k)]);
+                      if isnan(x[IX(i, j, k)]) {
+                          sprintf(msg, "DIVERGENCE ERROR");
+                      }
                   }
           ///*-------------------------------------------------------------------------
           //| Solve in Y in backward direction
@@ -122,6 +133,10 @@ int GS_itr(PARA_DATA *para, REAL **var, REAL *x, REAL *flag, REAL residual_min) 
                           + af[IX(i, j, k)] * x[IX(i, j, k + 1)]
                           + ab[IX(i, j, k)] * x[IX(i, j, k - 1)]
                           + b[IX(i, j, k)]) / ap[IX(i, j, k)]);
+                      if isnan(x[IX(i, j, k)]) {
+                          sprintf(msg, "DIVERGENCE ERROR");
+                          ffd_log(msg, FFD_ERROR);
+                      }
                   }
           ///*-------------------------------------------------------------------------
           //| Solve in Z in forward direction
@@ -138,6 +153,10 @@ int GS_itr(PARA_DATA *para, REAL **var, REAL *x, REAL *flag, REAL residual_min) 
                           + af[IX(i, j, k)] * x[IX(i, j, k + 1)]
                           + ab[IX(i, j, k)] * x[IX(i, j, k - 1)]
                           + b[IX(i, j, k)]) / ap[IX(i, j, k)]);
+                      if isnan(x[IX(i, j, k)]) {
+                          sprintf(msg, "DIVERGENCE ERROR");
+                          ffd_log(msg, FFD_ERROR);
+                      }
                   }
           ///*-------------------------------------------------------------------------
           //| Solve in Z in backward direction
@@ -154,9 +173,22 @@ int GS_itr(PARA_DATA *para, REAL **var, REAL *x, REAL *flag, REAL residual_min) 
                           + af[IX(i, j, k)] * x[IX(i, j, k + 1)]
                           + ab[IX(i, j, k)] * x[IX(i, j, k - 1)]
                           + b[IX(i, j, k)]) / ap[IX(i, j, k)]);
+                      if isnan(x[IX(i, j, k)]) {
+                          sprintf(msg, "DIVERGENCE ERROR");
+                          ffd_log(msg, FFD_ERROR);
+                      }
                   }
 
-	  //} END OF PREVIOUS IMPLEMENTATION OF FIXED NUMBER OF SWIPES
+      //} END OF PREVIOUS IMPLEMENTATION OF FIXED NUMBER OF SWIPES
+
+      // Anchor the pressure field at the center to prevent Neumann drift EWANTEST
+      if (x == var[IP]) {
+          int ref_i = imax / 2, ref_j = jmax / 2, ref_k = kmax / 2;
+          if (flag[IX(ref_i, ref_j, ref_k)] < 0) {
+              x[IX(ref_i, ref_j, ref_k)] = 0.0;
+          }
+      }
+
       //QFLUXFLUX
       residual = check_residual(para, var, x, flag);
 	  //sprintf(msg, "EWAN: Residual: %f", residual); // DEBUG
@@ -167,6 +199,7 @@ int GS_itr(PARA_DATA *para, REAL **var, REAL *x, REAL *flag, REAL residual_min) 
   residual = check_residual(para, var, x, flag);
   sprintf(msg, "Number of Iterations: %d", iter);
   ffd_log(msg, FFD_NORMAL);
+ 
  /* sprintf(msg, "Residual in the GS solver is: %e", residual);
   ffd_log(msg, FFD_NORMAL);*/
   //printf("residual in the solver is %f\n", check_residual(para, var, x));

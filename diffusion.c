@@ -67,6 +67,21 @@ int diffusion(PARA_DATA *para, REAL **var, int var_type, int index,
   /*sprintf(msg, "CHECKING_EQNSLV %f", T[IX(40, 40, 41)] - T[IX(40, 40, 40)]);
   ffd_log(msg, FFD_NORMAL);*/
 
+
+  // Check residual BEFORE the boundary condition function corrupts the 'b' array
+ /* if (para->solv->check_residual == 1) {
+      REAL residual = 0.0;
+      if (var_type == TEMP || var_type == Xi1 || var_type == Xi2 || var_type == C1 || var_type == C2)
+          residual = check_residual(para, var, psi, var[FLAGP]);
+          
+      else if (var_type == VX) residual = check_residual(para, var, psi, var[FLAGU]);
+      else if (var_type == VY) residual = check_residual(para, var, psi, var[FLAGV]);
+      else if (var_type == VZ) residual = check_residual(para, var, psi, var[FLAGW]);
+
+      sprintf(msg, "Residual in diffusion (var_type %d): %e", var_type, residual);
+      ffd_log(msg, FFD_NORMAL);
+  }*/
+
   // Define B.C.
   set_bnd(para, var, var_type, index, psi, BINDEX);
   return flag;
